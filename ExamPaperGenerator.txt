@@ -1,0 +1,64 @@
+import java.util.*;
+import java.util.stream.*;
+
+class Question {
+    enum Difficulty { EASY, MEDIUM, HARD }
+
+    private final String text;
+    private final Difficulty difficulty;
+
+    public Question(String text, Difficulty difficulty) {
+        this.text = text;
+        this.difficulty = difficulty;
+    }
+
+    public String getText() { return text; }
+    public Difficulty getDifficulty() { return difficulty; }
+
+    @Override
+    public String toString() {
+        return "[" + difficulty + "] " + text;
+    }
+}
+
+public class ExamPaperGenerator {
+    private final List<Question> questionBank; 
+    private final Random rand = new Random();
+
+    public ExamPaperGenerator(List<Question> bank) {
+        this.questionBank = new ArrayList<>(bank);
+    }
+
+    public List<Question> generatePaper(int numEasy, int numMedium, int numHard) {
+        List<Question> paper = new ArrayList<>();
+        paper.addAll(pickRandom(Question.Difficulty.EASY, numEasy));
+        paper.addAll(pickRandom(Question.Difficulty.MEDIUM, numMedium));
+        paper.addAll(pickRandom(Question.Difficulty.HARD, numHard));
+        Collections.shuffle(paper);
+        return paper;
+    }
+
+    private List<Question> pickRandom(Question.Difficulty diff, int count) {
+        List<Question> filtered = questionBank.stream()
+            .filter(q -> q.getDifficulty() == diff)
+            .collect(Collectors.toList());
+        Collections.shuffle(filtered, rand);
+        return filtered.stream().limit(count).collect(Collectors.toList());
+    }
+
+    public static void main(String[] args) {
+        List<Question> bank = Arrays.asList(
+            new Question("Define polymorphism.", Question.Difficulty.EASY),
+            new Question("Explain Java garbage collection.", Question.Difficulty.MEDIUM),
+            new Question("Write code to implement deadlock avoidance.", Question.Difficulty.HARD)
+            // ... add at least as many questions as needed
+        );
+        
+        ExamPaperGenerator gen = new ExamPaperGenerator(bank);
+        List<Question> paper = gen.generatePaper(2, 2, 1);
+        System.out.println("Generated Exam Paper:");
+        for (int i = 0; i < paper.size(); i++) {
+            System.out.printf("%d. %s%n", i + 1, paper.get(i));
+        }
+    }
+}
